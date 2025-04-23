@@ -3,13 +3,13 @@ import 'package:jsonifier/jsonifier.dart';
 
 final class EnumJsonifier<E extends Enum> extends StringEncodeJsonifier<E> {
   const EnumJsonifier({
-    required this.identifier,
+    required super.identifier,
     required this.values,
     super.nullable,
-  });
-
-  @override
-  final String identifier;
+  }) : assert(
+          E != Enum,
+          "EnumJsonifier<E> must be used with a specific enum type E.",
+        );
 
   final Iterable<E> values;
 
@@ -23,10 +23,10 @@ final class EnumJsonifier<E extends Enum> extends StringEncodeJsonifier<E> {
         );
 
   @override
-  E decodeValue(String value, Jsonifier jsonifier) =>
-      values.firstWhereOrNull((e) => e.name == value) ??
-      (throw "Invalid enum value: $value for $identifier.");
+  E fromJson(String json) =>
+      values.firstWhereOrNull((e) => e.name == json) ??
+      (throw "Invalid enum value: $json for $identifier.");
 
   @override
-  String encodeValue(E value, Jsonifier jsonifier) => value.name;
+  String toJson(E object) => object.name;
 }

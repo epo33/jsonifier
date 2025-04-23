@@ -10,10 +10,11 @@ abstract class TypeJsonifier<T> {
     BaseTypeJsonifier.boolJsonfier,
     DateTimeJsonifier(),
     DurationJsonifier(),
-    MapJsonifier(),
   ];
 
   const TypeJsonifier({this.nullable = false});
+
+  Type get jsonifiedType => T;
 
   TypeJsonifier get nullJsonifier;
 
@@ -21,30 +22,35 @@ abstract class TypeJsonifier<T> {
 
   final bool nullable;
 
-  dynamic fromJson(json, Jsonifier jsonifier);
+  dynamic fromJson(covariant dynamic json);
 
-  dynamic toJson(covariant dynamic object, Jsonifier jsonifier);
+  dynamic toJson(covariant dynamic object);
 
   bool canJsonify(object, covariant Jsonifier jsonifier) => object is T;
 
-  Iterable<IterableJsonifier> iterableJsonifiers(
-    covariant Jsonifier jsonifier,
-  ) =>
-      [
-        listJsonifiers(jsonifier),
-        setJsonifiers(jsonifier),
-      ];
+  TypeJsonifier get jsonifierIterable => IterableJsonifier.iterableOf<T>(this);
 
-  ListJsonifier<T> listJsonifiers(covariant Jsonifier jsonifier) =>
-      ListJsonifier<T>(this);
+  TypeJsonifier get jsonifierList => IterableJsonifier.listOf<T>(this);
 
-  SetJsonifier<T> setJsonifiers(covariant Jsonifier jsonifier) =>
-      SetJsonifier<T>(this);
+  TypeJsonifier get jsonifierSet => IterableJsonifier.setOf<T>(this);
 
-  Iterable<IterableJsonifier> mapJsonifiers(covariant Jsonifier jsonifier) =>
-      [];
+  MapJsonifier get mapJsonifiers => MapJsonifier<T>(valueJsonifier: this);
 
-  Iterable<IterableJsonifier> associatedJsonifiers(
-          covariant Jsonifier jsonifier) =>
-      [];
+  bool objectIsA(object, bool Function<V>(dynamic) isA) => isA<T>(object);
+
+  dynamic encode(covariant dynamic object, Jsonifier jsonifier) => object;
+
+  dynamic decode(covariant dynamic object, Jsonifier jsonifier) => object;
+
+  @override
+  String toString() => identifier;
+
+  @override
+  bool operator ==(other) =>
+      other is TypeJsonifier &&
+      other.identifier == identifier &&
+      other.jsonifiedType == jsonifiedType;
+
+  @override
+  int get hashCode => jsonifiedType.hashCode;
 }

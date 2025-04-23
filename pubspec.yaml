@@ -1,14 +1,13 @@
 name: jsonifier
 description: Jsonification of objects.
-version: 1.0.0
+version: 1.0.0+0
 
 environment:
-  sdk: ^3.6.1
+  sdk: ^3.6.0
 
 dependencies:
   collection: any
-  meta: ^1.16.0
-  # path: ^1.8.0
+  meta: any
 
 dev_dependencies:
   lints: ^5.0.0

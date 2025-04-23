@@ -7,56 +7,48 @@ final class BaseTypeJsonifier<T> extends TypeJsonifier<T> {
   static const boolJsonfier = BaseTypeJsonifier<bool>._('bool');
   static const nullJsonfier = BaseTypeJsonifier<Null>._('null');
 
-  const BaseTypeJsonifier._(this.identifier, {super.nullable});
+  const BaseTypeJsonifier._(this._identifier, {super.nullable});
+
+  @override
+  String get identifier => "$_identifier${nullable ? "?" : ""}";
 
   @override
   TypeJsonifier get nullJsonifier =>
       nullable ? this : BaseTypeJsonifier<T?>._(identifier, nullable: true);
 
   @override
-  T fromJson(covariant json, Jsonifier jsonifier) => json as T;
+  T fromJson(json) => json as T;
 
   @override
-  toJson(T object, Jsonifier jsonifier) => object;
+  toJson(T object) => object;
 
-  @override
-  final String identifier;
+  final String _identifier;
 }
 
 final class DateTimeJsonifier extends StringEncodeJsonifier<DateTime> {
-  const DateTimeJsonifier({super.nullable});
-
-  @override
-  String get identifier => "DateTime${nullable ? "?" : ""}";
+  const DateTimeJsonifier({super.nullable}) : super(identifier: "DateTime");
 
   @override
   TypeJsonifier get nullJsonifier =>
       nullable ? this : DateTimeJsonifier(nullable: true);
 
   @override
-  DateTime decodeValue(String value, Jsonifier jsonifier) =>
-      DateTime.parse(value);
+  DateTime fromJson(String json) => DateTime.parse(json);
 
   @override
-  String encodeValue(DateTime value, Jsonifier jsonifier) =>
-      value.toIso8601String();
+  String toJson(DateTime object) => object.toIso8601String();
 }
 
 final class DurationJsonifier extends StringEncodeJsonifier<Duration> {
-  const DurationJsonifier({super.nullable});
-
-  @override
-  String get identifier => "Duration${nullable ? "?" : ""}";
+  const DurationJsonifier({super.nullable}) : super(identifier: "Duration");
 
   @override
   TypeJsonifier get nullJsonifier =>
       nullable ? this : DurationJsonifier(nullable: true);
 
   @override
-  Duration decodeValue(String value, Jsonifier jsonifier) =>
-      Duration(microseconds: int.parse(value));
+  Duration fromJson(String json) => Duration(microseconds: int.parse(json));
 
   @override
-  String encodeValue(Duration value, Jsonifier jsonifier) =>
-      value.inMicroseconds.toString();
+  String toJson(Duration object) => object.inMicroseconds.toString();
 }

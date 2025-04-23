@@ -1,47 +1,73 @@
 import 'package:jsonifier/jsonifier.dart';
+import 'package:meta/meta.dart';
 
-final class MapJsonifier extends TypeJsonifier<Map<String, dynamic>> {
-  static TypeJsonifier? mapJsonifier(Map map, Jsonifier jsonifier) {
+final class MapJsonifier<T> extends TypeJsonifier<Map<String, T>> {
+  static const jsonMapIdentifier = "JsonMap";
+
+  static const mapIdentifier = "Map";
+
+  static String mapTypeMarker(Jsonifier jsonifier) =>
+      "${jsonifier.reservedStringPrefix}type${jsonifier.reservedStringPrefix}";
+
+  static TypeJsonifier? identifyJsonifier(Map map, Jsonifier jsonifier) {
     if (!map.keys.every((key) => key is String)) return null;
-    final mark = StringEncodeJsonifier.stringPrefix;
-    final type = map["${mark}type$mark"];
-    if (type == null) return MapJsonifier();
-    return jsonifier.identified(type);
+    final type = map[mapTypeMarker(jsonifier)];
+    if (type == null) return MapJsonifier.dynamic();
+    return jsonifier //
+        .typeJsonifiers
+        .identifiedBy(type)
+        ?.mapJsonifiers;
   }
 
-  static void addClassMarker(Map map, TypeJsonifier jsonifier) {
-    if (jsonifier is! ClassJsonifier) {
-      throw "Only ClassJsonifier jsonifiers can return maps.";
-    }
-    map.removeWhere((key, value) => value == null);
-    final mark = StringEncodeJsonifier.stringPrefix;
-    map["${mark}type$mark"] = jsonifier.identifier;
+  const MapJsonifier(
+      {required TypeJsonifier<T> this.valueJsonifier, super.nullable});
+
+  @internal
+  const MapJsonifier.dynamic({super.nullable}) : valueJsonifier = null;
+
+  final TypeJsonifier<T>? valueJsonifier;
+
+  @override
+  String get identifier => valueJsonifier == null
+      ? jsonMapIdentifier
+      : "$mapIdentifier${nullable ? "?" : ""}.${valueJsonifier!.identifier}";
+
+  @override
+  JsonMap fromJson(json) {
+    final map = _validMap(json);
+    return map.cast<String, T>();
   }
 
-  const MapJsonifier({super.nullable});
+  @override
+  TypeJsonifier get nullJsonifier => nullable
+      ? this
+      : valueJsonifier == null
+          ? MapJsonifier.dynamic(nullable: true)
+          : MapJsonifier<T>(valueJsonifier: valueJsonifier!, nullable: true);
 
   @override
-  String get identifier => "Map${nullable ? "?" : ""}";
+  JsonMap toJson(object) => _validMap(object);
 
   @override
-  Map<String, dynamic> fromJson(json, Jsonifier jsonifier) =>
-      _validMap(json).map(
-        (key, value) => MapEntry(key, jsonifier.fromJson(value)),
-      );
-
-  @override
-  // TODO: implement nullJsonifier
-  TypeJsonifier get nullJsonifier =>
-      nullable ? this : MapJsonifier(nullable: true);
-
-  @override
-  Map<String, dynamic> toJson(Map object, Jsonifier jsonifier) {
-    return _validMap(object).map(
+  encode(JsonMap object, Jsonifier jsonifier) {
+    final map = object.map(
       (key, value) => MapEntry(key, jsonifier.toJson(value)),
-    )..removeWhere((key, value) => value == null);
+    );
+    if (valueJsonifier != null) {
+      map[mapTypeMarker(jsonifier)] = valueJsonifier!.identifier;
+    }
+    return map;
   }
 
-  static Map<String, dynamic> _validMap(dynamic map) {
+  @override
+  decode(JsonMap object, Jsonifier jsonifier) {
+    object.remove(mapTypeMarker(jsonifier));
+    return object.map(
+      (key, value) => MapEntry(key, jsonifier.fromJson(value)),
+    );
+  }
+
+  static JsonMap _validMap(dynamic map) {
     assert(map is Map && map.keys.every((key) => key is String));
     return (map as Map).cast<String, dynamic>();
   }

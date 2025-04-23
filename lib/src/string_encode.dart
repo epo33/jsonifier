@@ -2,28 +2,31 @@ import 'package:jsonifier/jsonifier.dart';
 import 'package:meta/meta.dart';
 
 abstract class StringEncodeJsonifier<T> extends TypeJsonifier<T> {
-  static const int prefix = 0xe000;
+  const StringEncodeJsonifier({required String identifier, super.nullable})
+      : _identifier = identifier;
 
-  static String get stringPrefix => String.fromCharCode(prefix);
+  @override
+  String get identifier => "$_identifier${nullable ? "?" : ""}";
 
-  const StringEncodeJsonifier({super.nullable});
-
-  static bool isStringEncoding(String s) {
+  static bool isStringEncoding(String s, Jsonifier jsonifier) {
     final runes = s.runes;
     if (runes.isEmpty) return false;
-    return runes.first == prefix;
+    return runes.first == jsonifier.reservedStringPrefixCode;
   }
 
   static StringEncodeJsonifier? fromEncodededString(
     String s,
-    Map<String, TypeJsonifier> jsonifiers,
+    Jsonifier jsonifier,
   ) {
-    if (!isStringEncoding(s)) return null;
+    if (!isStringEncoding(s, jsonifier)) return null;
     final parts = s.split(".");
-    if (parts.length < 3) return null;
+    if (parts.length < 2) return null;
     final identifier = parts[1];
-    final jsonifier = jsonifiers[identifier];
-    return jsonifier as StringEncodeJsonifier;
+    final result = jsonifier //
+        .typeJsonifiers
+        .whereType<StringEncodeJsonifier>()
+        .asJsonifierMap[identifier];
+    return result as StringEncodeJsonifier?;
   }
 
   static bool isPrivateUnicodePoint(int codePoint) =>
@@ -32,24 +35,23 @@ abstract class StringEncodeJsonifier<T> extends TypeJsonifier<T> {
       (codePoint >= 0x100000 && codePoint <= 0x10fffd);
 
   @override
-  @nonVirtual
-  dynamic fromJson(json, Jsonifier jsonifier) {
-    assert(isStringEncoding(json));
-    final parts = (json as String).split(".");
-    assert(
-      parts.length >= 3 && parts[0] == stringPrefix && parts[1] == identifier,
-    );
-    return decodeValue(parts.skip(2).join("."), jsonifier);
-  }
+  T fromJson(String json);
 
   @override
-  @nonVirtual
-  toJson(object, Jsonifier jsonifier) {
-    final s = encodeValue(object, jsonifier);
-    return "$stringPrefix.$identifier.$s";
+  String toJson(T object);
+
+  @override
+  @internal
+  dynamic encode(String object, Jsonifier jsonifier) =>
+      "${jsonifier.reservedStringPrefix}.$identifier.$object";
+
+  @override
+  @internal
+  dynamic decode(String object, Jsonifier jsonifier) {
+    final prefix = "${jsonifier.reservedStringPrefix}.$identifier.";
+    assert(object.startsWith(prefix));
+    return object.substring(prefix.length);
   }
 
-  T decodeValue(String value, Jsonifier jsonifier);
-
-  String encodeValue(T value, Jsonifier jsonifier);
+  final String _identifier;
 }
