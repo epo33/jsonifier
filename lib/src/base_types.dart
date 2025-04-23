@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:jsonifier/jsonifier.dart';
 
 final class BaseTypeJsonifier<T> extends TypeJsonifier<T> {
@@ -51,4 +54,19 @@ final class DurationJsonifier extends StringEncodeJsonifier<Duration> {
 
   @override
   String toJson(Duration object) => object.inMicroseconds.toString();
+}
+
+final class Uint8ListJsonifier extends StringEncodeJsonifier<Uint8List> {
+  const Uint8ListJsonifier({super.nullable}) : super(identifier: "Uint8List");
+
+  @override
+  TypeJsonifier get nullJsonifier =>
+      nullable ? this : Uint8ListJsonifier(nullable: true);
+
+  @override
+  Uint8List fromJson(String json) =>
+      json.isEmpty ? Uint8List(0) : Uint8List.fromList(base64Decode(json));
+
+  @override
+  String toJson(Uint8List object) => object.isEmpty ? "" : base64Encode(object);
 }

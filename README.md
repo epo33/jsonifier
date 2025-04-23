@@ -3,7 +3,7 @@ Tools to easily jsonify (fromJson/toJson) objects.
 #Usage
 Instanciate [Jsonifier]`(jsonifiers:[...])` class and use its methods [Jsonifier.fromJson] and [Jsonifier.toJson]. [Jsonifier] can serialize this types :
 * Scalar Json types : null, String, int, double, bool. 
-* Dart bases types : DateTime, Duration.
+* Dart bases types : DateTime, Duration, UInt8List.
 * Any type covered by [TypeJsonifier]s provided in the `jsonifiers` parameter of the contructor.
 * Structured types : Map<String, T>, List<T>, Set<T> and Iterable<T> where T is any of 
 types enumerated here.

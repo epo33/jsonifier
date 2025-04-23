@@ -10,6 +10,7 @@ abstract class TypeJsonifier<T> {
     BaseTypeJsonifier.boolJsonfier,
     DateTimeJsonifier(),
     DurationJsonifier(),
+    Uint8ListJsonifier(),
   ];
 
   const TypeJsonifier({this.nullable = false});
