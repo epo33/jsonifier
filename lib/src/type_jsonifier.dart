@@ -46,6 +46,15 @@ abstract class TypeJsonifier<T> {
   @override
   String toString() => identifier;
 
+  String buildIdentifier(String baseIdentifier, [String? subType]) =>
+      subType == null
+          ? nullable
+              ? "$baseIdentifier?"
+              : baseIdentifier
+          : nullable
+              ? "$baseIdentifier?.$subType"
+              : "$baseIdentifier.$subType";
+
   @override
   bool operator ==(other) =>
       other is TypeJsonifier &&

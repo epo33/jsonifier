@@ -20,8 +20,9 @@ sealed class IterableJsonifier<T, L> extends TypeJsonifier<L> {
   ) {
     if (iterable.isEmpty) return null;
     final type = iterable.last;
-    if (type is! String) return null;
-    return jsonifier.typeJsonifiers.identifiedBy(type);
+    if (type is! String || type.isEmpty) return null;
+    assert(type.startsWith(jsonifier.reservedStringPrefix));
+    return jsonifier.typeJsonifiers.identifiedBy(type.substring(1));
   }
 
   const IterableJsonifier({super.nullable});
@@ -33,8 +34,8 @@ final class _IterableJsonifier<T, L> extends IterableJsonifier<T, L> {
   final TypeJsonifier itemJsonifier;
 
   @override
-  String get identifier =>
-      "${IterableJsonifier.iterableIdentifier}${nullable ? "?" : ""}.${itemJsonifier.identifier}";
+  String get identifier => buildIdentifier(
+      IterableJsonifier.iterableIdentifier, itemJsonifier.identifier);
 
   @override
   TypeJsonifier get nullJsonifier => nullable
@@ -62,7 +63,7 @@ final class _IterableJsonifier<T, L> extends IterableJsonifier<T, L> {
     final list = object //
         .map((item) => jsonifier.toJson(item))
         .toList()
-      ..add(identifier);
+      ..add("${jsonifier.reservedStringPrefix}$identifier");
     return list;
   }
 
@@ -81,8 +82,10 @@ final class _ListJsonifier<T, L> extends _IterableJsonifier<T, L> {
   const _ListJsonifier(super.itemJsonifier, {super.nullable});
 
   @override
-  String get identifier =>
-      "${IterableJsonifier.listIdentifier}${nullable ? "?" : ""}.${itemJsonifier.identifier}";
+  String get identifier => buildIdentifier(
+        IterableJsonifier.listIdentifier,
+        itemJsonifier.identifier,
+      );
 
   @override
   bool canJsonify(object, Jsonifier jsonifier) =>
@@ -103,8 +106,10 @@ final class _SetJsonifier<T, L> extends _IterableJsonifier<T, L> {
   const _SetJsonifier(super.itemJsonifier, {super.nullable});
 
   @override
-  String get identifier =>
-      "${IterableJsonifier.setIdentifier}${nullable ? "?" : ""}.${itemJsonifier.identifier}";
+  String get identifier => buildIdentifier(
+        IterableJsonifier.setIdentifier,
+        itemJsonifier.identifier,
+      );
 
   @override
   bool canJsonify(object, Jsonifier jsonifier) => object is Set<T>;

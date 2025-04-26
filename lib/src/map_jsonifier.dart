@@ -12,11 +12,12 @@ final class MapJsonifier<T> extends TypeJsonifier<Map<String, T>> {
   static TypeJsonifier? identifyJsonifier(Map map, Jsonifier jsonifier) {
     if (!map.keys.every((key) => key is String)) return null;
     final type = map[mapTypeMarker(jsonifier)];
-    if (type == null) return MapJsonifier.dynamic();
-    return jsonifier //
-        .typeJsonifiers
-        .identifiedBy(type)
-        ?.mapJsonifiers;
+    return type == null
+        ? MapJsonifier.dynamic()
+        : jsonifier //
+            .typeJsonifiers
+            .identifiedBy(type)
+            ?.mapJsonifiers;
   }
 
   const MapJsonifier(
@@ -28,9 +29,8 @@ final class MapJsonifier<T> extends TypeJsonifier<Map<String, T>> {
   final TypeJsonifier<T>? valueJsonifier;
 
   @override
-  String get identifier => valueJsonifier == null
-      ? jsonMapIdentifier
-      : "$mapIdentifier${nullable ? "?" : ""}.${valueJsonifier!.identifier}";
+  String get identifier =>
+      buildIdentifier(jsonMapIdentifier, valueJsonifier?.identifier);
 
   @override
   JsonMap fromJson(json) {
@@ -50,12 +50,11 @@ final class MapJsonifier<T> extends TypeJsonifier<Map<String, T>> {
 
   @override
   encode(JsonMap object, Jsonifier jsonifier) {
+    object.removeWhere((key, value) => value == null);
     final map = object.map(
       (key, value) => MapEntry(key, jsonifier.toJson(value)),
     );
-    if (valueJsonifier != null) {
-      map[mapTypeMarker(jsonifier)] = valueJsonifier!.identifier;
-    }
+    map[mapTypeMarker(jsonifier)] = valueJsonifier?.identifier;
     return map;
   }
 

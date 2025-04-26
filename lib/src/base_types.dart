@@ -13,7 +13,7 @@ final class BaseTypeJsonifier<T> extends TypeJsonifier<T> {
   const BaseTypeJsonifier._(this._identifier, {super.nullable});
 
   @override
-  String get identifier => "$_identifier${nullable ? "?" : ""}";
+  String get identifier => buildIdentifier(_identifier);
 
   @override
   TypeJsonifier get nullJsonifier =>
@@ -28,8 +28,14 @@ final class BaseTypeJsonifier<T> extends TypeJsonifier<T> {
   final String _identifier;
 }
 
-final class DateTimeJsonifier extends StringEncodeJsonifier<DateTime> {
-  const DateTimeJsonifier({super.nullable}) : super(identifier: "DateTime");
+final class DateTimeJsonifier extends TypeJsonifier<DateTime>
+    with StringEncodeJsonifier<DateTime> {
+  static const dateTimeIdentifier = "DateTime";
+
+  const DateTimeJsonifier({super.nullable});
+
+  @override
+  String get identifier => buildIdentifier(dateTimeIdentifier);
 
   @override
   TypeJsonifier get nullJsonifier =>
@@ -42,8 +48,14 @@ final class DateTimeJsonifier extends StringEncodeJsonifier<DateTime> {
   String toJson(DateTime object) => object.toIso8601String();
 }
 
-final class DurationJsonifier extends StringEncodeJsonifier<Duration> {
-  const DurationJsonifier({super.nullable}) : super(identifier: "Duration");
+final class DurationJsonifier extends TypeJsonifier<Duration>
+    with StringEncodeJsonifier<Duration> {
+  static const durationIdentifier = "Duration";
+
+  const DurationJsonifier({super.nullable});
+
+  @override
+  String get identifier => buildIdentifier(durationIdentifier);
 
   @override
   TypeJsonifier get nullJsonifier =>
@@ -56,8 +68,14 @@ final class DurationJsonifier extends StringEncodeJsonifier<Duration> {
   String toJson(Duration object) => object.inMicroseconds.toString();
 }
 
-final class Uint8ListJsonifier extends StringEncodeJsonifier<Uint8List> {
-  const Uint8ListJsonifier({super.nullable}) : super(identifier: "Uint8List");
+final class Uint8ListJsonifier extends TypeJsonifier<Uint8List>
+    with StringEncodeJsonifier<Uint8List> {
+  static const uint8ListIdentifier = "Uint8List";
+
+  const Uint8ListJsonifier({super.nullable});
+
+  @override
+  String get identifier => buildIdentifier(uint8ListIdentifier);
 
   @override
   TypeJsonifier get nullJsonifier =>

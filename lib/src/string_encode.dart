@@ -1,13 +1,7 @@
 import 'package:jsonifier/jsonifier.dart';
 import 'package:meta/meta.dart';
 
-abstract class StringEncodeJsonifier<T> extends TypeJsonifier<T> {
-  const StringEncodeJsonifier({required String identifier, super.nullable})
-      : _identifier = identifier;
-
-  @override
-  String get identifier => "$_identifier${nullable ? "?" : ""}";
-
+mixin StringEncodeJsonifier<T> on TypeJsonifier<T> {
   static bool isStringEncoding(String s, Jsonifier jsonifier) {
     final runes = s.runes;
     if (runes.isEmpty) return false;
@@ -52,6 +46,4 @@ abstract class StringEncodeJsonifier<T> extends TypeJsonifier<T> {
     assert(object.startsWith(prefix));
     return object.substring(prefix.length);
   }
-
-  final String _identifier;
 }

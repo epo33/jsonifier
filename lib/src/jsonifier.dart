@@ -32,30 +32,51 @@ class Jsonifier {
   Iterable<TypeJsonifier> get typeJsonifiers => _jsonifiers;
 
   dynamic fromJson<T>(json) {
+    bool isJsonified(object) =>
+        object is String && object.startsWith(reservedStringPrefix);
+
     if (json == null) return null;
+    if (json is! String &&
+        json is! num &&
+        json is! bool &&
+        json is! Iterable &&
+        json is! Map) {
+      return json;
+    }
     TypeJsonifier? jsonifier;
     if (json is Map) {
+      if (!json.keys.any(isJsonified)) return json;
       jsonifier = ClassJsonifier.identifyJsonifier(json, this) ??
           MapJsonifier.identifyJsonifier(json, this);
     } else if (json is Iterable) {
+      if (!isJsonified(json.lastOrNull)) return json;
       jsonifier = IterableJsonifier.identifyJsonifier(json, this);
     } else {
       if (json is String) {
         jsonifier = StringEncodeJsonifier.fromEncodededString(json, this);
       }
-      assert(
-        json is String || json is int || json is double || json is bool,
-        "Invalid json type (${json.runtimeType}).",
-      );
       jsonifier ??= typeJsonifiers.firstJsonifierFor(json, this);
     }
     if (jsonifier == null) {
       throw "No jsonifier found for type ${json.runtimeType}";
     }
-    return jsonifier.fromJson(jsonifier.decode(json, this));
+    final result = jsonifier.fromJson(jsonifier.decode(json, this));
+    if (result is! T) {
+      throw "Invalid type ${result.runtimeType}. Expected $T.";
+    }
+    return result;
   }
 
   dynamic toJson(object) {
+    // toJson MUST be idempotent ie toJson(object) == toJson(toJson(object)).
+    bool alreadyJsonified(key) =>
+        key is String && key.startsWith(reservedStringPrefix);
+
+    if (object is String && alreadyJsonified(object)) return object;
+    if (object is Map && object.keys.any(alreadyJsonified)) return object;
+    if (object is Iterable && alreadyJsonified(object.lastOrNull)) {
+      return object;
+    }
     final jsonifier = typeJsonifiers.jsonifierFor(object, this);
     if (jsonifier == null) {
       throw "No jsonifier found for type ${object.runtimeType}";

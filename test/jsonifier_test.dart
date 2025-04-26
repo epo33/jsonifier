@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
@@ -36,7 +37,8 @@ void main() {
     );
     final json = jsonifier.toJson(object);
     expect(json is T, isTrue);
-    final value = jsonifier.fromJson(json);
+    expect(jsonifier.toJson(json), json);
+    final value = jsonifier.fromJson(jsonDecode(jsonEncode(json)));
     expect(value is V, isTrue);
     expect(
       testEquality?.call(object, value) ?? value == object,
