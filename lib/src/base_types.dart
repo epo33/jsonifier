@@ -20,6 +20,26 @@ final class BaseTypeJsonifier<T> extends TypeJsonifier<T> {
       nullable ? this : BaseTypeJsonifier<T?>._(identifier, nullable: true);
 
   @override
+  FromString<T>? get decodeString {
+    switch (T) {
+      // ignore: type_literal_in_constant_pattern
+      case String:
+        return (s) => s as T;
+      // ignore: type_literal_in_constant_pattern
+      case int:
+        return (s) => s.isEmpty ? null as T? : int.parse(s) as T;
+      // ignore: type_literal_in_constant_pattern
+      case double:
+        return (s) => s.isEmpty ? null as T? : double.parse(s) as T;
+      // ignore: type_literal_in_constant_pattern
+      case bool:
+        return (s) => s.isEmpty ? null as T? : bool.parse(s) as T;
+      default:
+        return null;
+    }
+  }
+
+  @override
   T fromJson(json) => json as T;
 
   @override
@@ -87,4 +107,24 @@ final class Uint8ListJsonifier extends TypeJsonifier<Uint8List>
 
   @override
   String toJson(Uint8List object) => object.isEmpty ? "" : base64Encode(object);
+}
+
+final class UriJsonifier extends TypeJsonifier<Uri>
+    with StringEncodeJsonifier<Uri> {
+  static const uriIdentifier = "Uri";
+
+  const UriJsonifier({super.nullable});
+
+  @override
+  String get identifier => buildIdentifier(uriIdentifier);
+
+  @override
+  TypeJsonifier get nullJsonifier =>
+      nullable ? this : UriJsonifier(nullable: true);
+
+  @override
+  Uri fromJson(String json) => Uri.parse(json);
+
+  @override
+  String toJson(Uri object) => object.toString();
 }

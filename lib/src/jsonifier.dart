@@ -1,10 +1,10 @@
 import 'package:collection/collection.dart';
 import 'package:jsonifier/src/base_types.dart';
-import 'package:jsonifier/src/iterable_jsonifier.dart';
 
 import '../jsonifier.dart';
-part 'structure.dart';
+
 part 'extensions.dart';
+part 'structure.dart';
 
 class Jsonifier {
   Jsonifier({
@@ -30,6 +30,12 @@ class Jsonifier {
       String.fromCharCode(reservedStringPrefixCode);
 
   Iterable<TypeJsonifier> get typeJsonifiers => _jsonifiers;
+
+  T? jsonifierFor<T extends TypeJsonifier>(object, {bool mustExists = true}) {
+    final result = typeJsonifiers.jsonifierFor(object, this);
+    if (result is T || !mustExists) return result as T;
+    throw "No jsonifier found for type ${object.runtimeType}";
+  }
 
   dynamic fromJson<T>(json) {
     bool isJsonified(object) =>
@@ -60,6 +66,7 @@ class Jsonifier {
     if (jsonifier == null) {
       throw "No jsonifier found for type ${json.runtimeType}";
     }
+    jsonifier = jsonifier.typeJsonifierFor(json, this);
     final result = jsonifier.fromJson(jsonifier.decode(json, this));
     if (result is! T) {
       throw "Invalid type ${result.runtimeType}. Expected $T.";
@@ -82,7 +89,7 @@ class Jsonifier {
       throw "No jsonifier found for type ${object.runtimeType}";
     }
     final json = jsonifier.toJson(object);
-    return jsonifier.encode(json, this);
+    return jsonifier.encode(json, this, object);
   }
 
   final _jsonifiers = <TypeJsonifier>{};

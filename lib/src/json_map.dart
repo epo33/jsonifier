@@ -20,7 +20,7 @@ extension JsonMapExtension on JsonMap {
       throw "Key '$key' is of type '${value.runtimeType}', expected '$T'.";
     }
 
-    if (!key.contains(".")) {
+    if (key.contains(".")) {
       final parts = key.split(".");
       Map map = this;
       var done = "";

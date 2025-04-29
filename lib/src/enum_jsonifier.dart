@@ -16,7 +16,7 @@ final class EnumJsonifier<E extends Enum> extends TypeJsonifier<E>
   final Iterable<E> values;
 
   @override
-  String get identifier => buildIdentifier(_identifier);
+  String get identifier => buildIdentifier("@$_identifier");
 
   @override
   TypeJsonifier get nullJsonifier => nullable
@@ -34,6 +34,9 @@ final class EnumJsonifier<E extends Enum> extends TypeJsonifier<E>
 
   @override
   String toJson(E object) => object.name;
+
+  dynamic callWithEnumType(dynamic Function<T extends Enum>() called) =>
+      called<E>();
 
   final String _identifier;
 }

@@ -1,7 +1,8 @@
 import 'package:jsonifier/jsonifier.dart';
 
 abstract class ClassJsonifier<C extends Object> extends TypeJsonifier<C> {
-  const ClassJsonifier({super.nullable});
+  const ClassJsonifier({super.nullable, int priority = 0})
+      : _priority = priority;
 
   static String classTypeMarker(Jsonifier jsonifier) =>
       "${jsonifier.reservedStringPrefix}class${jsonifier.reservedStringPrefix}";
@@ -17,17 +18,22 @@ abstract class ClassJsonifier<C extends Object> extends TypeJsonifier<C> {
   }
 
   @override
+  bool canJsonify(object, Jsonifier jsonifier) => object.runtimeType == C;
+
+  @override
+  int get priority => _priority;
+
+  @override
   C fromJson(JsonMap json);
 
   @override
   JsonMap toJson(C object);
 
   @override
-  encode(JsonMap object, Jsonifier jsonifier) {
+  encode(JsonMap object, Jsonifier jsonifier, C source) {
     final map = object.map(
       (key, value) => MapEntry(key, jsonifier.toJson(value)),
     );
-    map.removeWhere((key, value) => value == null);
     map[classTypeMarker(jsonifier)] = identifier;
     return map;
   }
@@ -39,4 +45,6 @@ abstract class ClassJsonifier<C extends Object> extends TypeJsonifier<C> {
       (key, value) => MapEntry(key, jsonifier.fromJson(value)),
     );
   }
+
+  final int _priority;
 }

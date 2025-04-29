@@ -49,8 +49,7 @@ final class MapJsonifier<T> extends TypeJsonifier<Map<String, T>> {
   JsonMap toJson(object) => _validMap(object);
 
   @override
-  encode(JsonMap object, Jsonifier jsonifier) {
-    object.removeWhere((key, value) => value == null);
+  encode(JsonMap object, Jsonifier jsonifier, Map<String, T> source) {
     final map = object.map(
       (key, value) => MapEntry(key, jsonifier.toJson(value)),
     );

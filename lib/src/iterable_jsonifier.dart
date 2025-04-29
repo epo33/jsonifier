@@ -25,12 +25,15 @@ sealed class IterableJsonifier<T, L> extends TypeJsonifier<L> {
     return jsonifier.typeJsonifiers.identifiedBy(type.substring(1));
   }
 
+  TypeJsonifier get itemJsonifier;
+
   const IterableJsonifier({super.nullable});
 }
 
 final class _IterableJsonifier<T, L> extends IterableJsonifier<T, L> {
   const _IterableJsonifier(this.itemJsonifier, {super.nullable});
 
+  @override
   final TypeJsonifier itemJsonifier;
 
   @override
@@ -47,7 +50,7 @@ final class _IterableJsonifier<T, L> extends IterableJsonifier<T, L> {
 
   @override
   Iterable<T> fromJson(json) {
-    if (json is! Iterable || json.isEmpty) {
+    if (json is! Iterable) {
       throw "Invalid json for $identifier.";
     }
     return json.cast<T>().toList();
@@ -59,7 +62,7 @@ final class _IterableJsonifier<T, L> extends IterableJsonifier<T, L> {
       .toList();
 
   @override
-  encode(Iterable object, Jsonifier jsonifier) {
+  encode(Iterable object, Jsonifier jsonifier, Iterable<T> source) {
     final list = object //
         .map((item) => jsonifier.toJson(item))
         .toList()

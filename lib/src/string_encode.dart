@@ -35,8 +35,11 @@ mixin StringEncodeJsonifier<T> on TypeJsonifier<T> {
   String toJson(T object);
 
   @override
+  FromString<T>? get decodeString => fromJson;
+
+  @override
   @internal
-  dynamic encode(String object, Jsonifier jsonifier) =>
+  dynamic encode(String object, Jsonifier jsonifier, T source) =>
       "${jsonifier.reservedStringPrefix}.$identifier.$object";
 
   @override

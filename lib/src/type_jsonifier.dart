@@ -1,6 +1,7 @@
 import 'package:jsonifier/jsonifier.dart';
 import 'package:jsonifier/src/base_types.dart';
-import 'package:jsonifier/src/iterable_jsonifier.dart';
+
+typedef FromString<T> = T? Function(String s);
 
 abstract class TypeJsonifier<T> {
   static const baseJsonifiers = <TypeJsonifier>[
@@ -11,6 +12,7 @@ abstract class TypeJsonifier<T> {
     DateTimeJsonifier(),
     DurationJsonifier(),
     Uint8ListJsonifier(),
+    UriJsonifier(),
   ];
 
   const TypeJsonifier({this.nullable = false});
@@ -23,11 +25,13 @@ abstract class TypeJsonifier<T> {
 
   final bool nullable;
 
+  FromString<T>? get decodeString => null;
+
   dynamic fromJson(covariant dynamic json);
 
   dynamic toJson(covariant dynamic object);
 
-  bool canJsonify(object, covariant Jsonifier jsonifier) => object is T;
+  bool canJsonify(object, Jsonifier jsonifier) => object is T;
 
   TypeJsonifier get jsonifierIterable => IterableJsonifier.iterableOf<T>(this);
 
@@ -39,7 +43,22 @@ abstract class TypeJsonifier<T> {
 
   bool objectIsA(object, bool Function<V>(dynamic) isA) => isA<T>(object);
 
-  dynamic encode(covariant dynamic object, Jsonifier jsonifier) => object;
+  dynamic callWithType(dynamic Function<C>() called) => called<T>();
+
+  int get priority => 0;
+
+  dynamic encode(
+    covariant dynamic object,
+    Jsonifier jsonifier,
+    covariant source,
+  ) =>
+      object;
+
+  TypeJsonifier typeJsonifierFor(
+    covariant dynamic object,
+    Jsonifier jsonifier,
+  ) =>
+      this;
 
   dynamic decode(covariant dynamic object, Jsonifier jsonifier) => object;
 
