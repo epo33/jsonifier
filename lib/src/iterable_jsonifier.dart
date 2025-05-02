@@ -1,18 +1,13 @@
 import 'package:jsonifier/jsonifier.dart';
+import 'package:jsonifier/src/generics.dart';
 
 sealed class IterableJsonifier<T, L> extends TypeJsonifier<L> {
-  static const iterableIdentifier = "Iterable";
   static const listIdentifier = "List";
   static const setIdentifier = "Set";
 
-  static TypeJsonifier iterableOf<T>(TypeJsonifier<T> typeJsonifier) =>
-      _IterableJsonifier<T, Iterable<T>>(typeJsonifier);
+  static const listJsonifier = _ListJsonifier<dynamic, List>(null);
 
-  static TypeJsonifier listOf<T>(TypeJsonifier<T> typeJsonifier) =>
-      _ListJsonifier<T, List<T>>(typeJsonifier);
-
-  static TypeJsonifier setOf<T>(TypeJsonifier<T> typeJsonifier) =>
-      _SetJsonifier<T, Set<T>>(typeJsonifier);
+  static const setJsonifier = _SetJsonifier<dynamic, Set>(null);
 
   static TypeJsonifier? identifyJsonifier(
     Iterable iterable,
@@ -20,33 +15,30 @@ sealed class IterableJsonifier<T, L> extends TypeJsonifier<L> {
   ) {
     if (iterable.isEmpty) return null;
     final type = iterable.last;
-    if (type is! String || type.isEmpty) return null;
+    if (type is! String) return null;
     assert(type.startsWith(jsonifier.reservedStringPrefix));
-    return jsonifier.typeJsonifiers.identifiedBy(type.substring(1));
+    return jsonifier.getReifierFor<IterableJsonifier>(type.substring(1));
   }
 
-  TypeJsonifier get itemJsonifier;
-
-  const IterableJsonifier({super.nullable});
+  const IterableJsonifier(super.baseIdentifier, {super.nullable});
 }
 
-final class _IterableJsonifier<T, L> extends IterableJsonifier<T, L> {
-  const _IterableJsonifier(this.itemJsonifier, {super.nullable});
+abstract class _IterableJsonifier<T, L> extends IterableJsonifier<T, L>
+    with OneGenericTypeJsonifierMixin<L> {
+  const _IterableJsonifier(
+    super.baseIdentifier,
+    this.genericReifier, {
+    super.nullable,
+  });
 
   @override
-  final TypeJsonifier itemJsonifier;
+  final TypeReifier<T>? genericReifier;
 
   @override
   String get identifier => buildIdentifier(
-      IterableJsonifier.iterableIdentifier, itemJsonifier.identifier);
-
-  @override
-  TypeJsonifier get nullJsonifier => nullable
-      ? this
-      : _IterableJsonifier<T, Iterable<T>?>(
-          itemJsonifier,
-          nullable: nullable,
-        );
+        baseIdentifier,
+        genericReifier?.identifier,
+      );
 
   @override
   Iterable<T> fromJson(json) {
@@ -62,7 +54,7 @@ final class _IterableJsonifier<T, L> extends IterableJsonifier<T, L> {
       .toList();
 
   @override
-  encode(Iterable object, Jsonifier jsonifier, Iterable<T> source) {
+  encode(Iterable object, Jsonifier jsonifier) {
     final list = object //
         .map((item) => jsonifier.toJson(item))
         .toList()
@@ -81,47 +73,51 @@ final class _IterableJsonifier<T, L> extends IterableJsonifier<T, L> {
   }
 }
 
-final class _ListJsonifier<T, L> extends _IterableJsonifier<T, L> {
-  const _ListJsonifier(super.itemJsonifier, {super.nullable});
-
-  @override
-  String get identifier => buildIdentifier(
-        IterableJsonifier.listIdentifier,
-        itemJsonifier.identifier,
-      );
-
-  @override
-  bool canJsonify(object, Jsonifier jsonifier) =>
-      object is Iterable<T> && object is! Set;
-
-  @override
-  TypeJsonifier get nullJsonifier => nullable
-      ? this
-      : _ListJsonifier<T, List<T>?>(itemJsonifier, nullable: true);
+final class _ListJsonifier<T, L extends List?>
+    extends _IterableJsonifier<T, L> {
+  const _ListJsonifier(TypeReifier<T>? itemReifier, {super.nullable})
+      : super(IterableJsonifier.listIdentifier, itemReifier);
 
   @override
   List<T> fromJson(covariant json) {
     return super.fromJson(json) as List<T>;
   }
+
+  @override
+  TypeJsonifier buildJsonifier<V>({
+    required bool nullable,
+    TypeReifier<V>? reifier,
+  }) =>
+      nullable
+          ? _ListJsonifier<V, List<V>?>(reifier, nullable: nullable)
+          : _ListJsonifier<V, List<V>>(reifier, nullable: nullable);
+
+  @override
+  ObjectIsA buildObjectIsA<V>(TypeScanner scanner, {required bool nullable}) =>
+      nullable
+          ? <K>() => scanner.objectIsA<List<K>?>()
+          : <K>() => scanner.objectIsA<List<K>>();
 }
 
-final class _SetJsonifier<T, L> extends _IterableJsonifier<T, L> {
-  const _SetJsonifier(super.itemJsonifier, {super.nullable});
-
-  @override
-  String get identifier => buildIdentifier(
-        IterableJsonifier.setIdentifier,
-        itemJsonifier.identifier,
-      );
-
-  @override
-  bool canJsonify(object, Jsonifier jsonifier) => object is Set<T>;
-
-  @override
-  TypeJsonifier get nullJsonifier => nullable
-      ? this
-      : _SetJsonifier<T, Set<T>?>(itemJsonifier, nullable: true);
+final class _SetJsonifier<T, S extends Set?> extends _IterableJsonifier<T, S> {
+  const _SetJsonifier(TypeReifier<T>? itemReifier, {super.nullable})
+      : super(IterableJsonifier.setIdentifier, itemReifier);
 
   @override
   Set<T> fromJson(json) => super.fromJson(json).toSet();
+
+  @override
+  TypeJsonifier buildJsonifier<V>({
+    required bool nullable,
+    TypeReifier<V>? reifier,
+  }) =>
+      nullable
+          ? _SetJsonifier<V, Set<V>?>(reifier, nullable: nullable)
+          : _SetJsonifier<V, Set<V>>(reifier, nullable: nullable);
+
+  @override
+  ObjectIsA buildObjectIsA<V>(TypeScanner scanner, {required bool nullable}) =>
+      nullable
+          ? <K>() => scanner.objectIsA<Set<K>?>()
+          : <K>() => scanner.objectIsA<Set<K>>();
 }

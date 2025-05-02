@@ -10,9 +10,9 @@ extension JsonMapExtension on JsonMap {
   Duration? asDuration(String key) => _asA<Duration>(key);
   E? asEnum<E extends Enum>(String key) => _asA<E>(key);
   Iterable<T>? asIterable<T>(String key) => _asA<Iterable<T>>(key);
-  List<T>? asList<T>(String key) => _asA<List<T>>(key);
-  Set<T>? asSet<T>(String key) => _asA<Set<T>>(key);
-  Map<String, T>? asMap<T>(String key) => _asA<Map<String, T>>(key);
+  List<T>? asList<T>(String key) => _asA<Iterable>(key)?.cast<T>().toList();
+  Set<T>? asSet<T>(String key) => _asA<Iterable>(key)?.cast<T>().toSet();
+  Map<String, T>? asMap<T>(String key) => _asA<Map>(key)?.cast<String, T>();
 
   T? _asA<T>(String key) {
     T? checkValue(value) {

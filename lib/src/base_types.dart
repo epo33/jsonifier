@@ -10,14 +10,11 @@ final class BaseTypeJsonifier<T> extends TypeJsonifier<T> {
   static const boolJsonfier = BaseTypeJsonifier<bool>._('bool');
   static const nullJsonfier = BaseTypeJsonifier<Null>._('null');
 
-  const BaseTypeJsonifier._(this._identifier, {super.nullable});
+  const BaseTypeJsonifier._(super.baseIdentifier, {super.nullable});
 
   @override
-  String get identifier => buildIdentifier(_identifier);
-
-  @override
-  TypeJsonifier get nullJsonifier =>
-      nullable ? this : BaseTypeJsonifier<T?>._(identifier, nullable: true);
+  TypeJsonifier get nullReifier =>
+      nullable ? this : BaseTypeJsonifier<T?>._(baseIdentifier, nullable: true);
 
   @override
   FromString<T>? get decodeString {
@@ -44,21 +41,16 @@ final class BaseTypeJsonifier<T> extends TypeJsonifier<T> {
 
   @override
   toJson(T object) => object;
-
-  final String _identifier;
 }
 
 final class DateTimeJsonifier extends TypeJsonifier<DateTime>
     with StringEncodeJsonifier<DateTime> {
   static const dateTimeIdentifier = "DateTime";
 
-  const DateTimeJsonifier({super.nullable});
+  const DateTimeJsonifier({super.nullable}) : super(dateTimeIdentifier);
 
   @override
-  String get identifier => buildIdentifier(dateTimeIdentifier);
-
-  @override
-  TypeJsonifier get nullJsonifier =>
+  TypeJsonifier get nullReifier =>
       nullable ? this : DateTimeJsonifier(nullable: true);
 
   @override
@@ -72,13 +64,10 @@ final class DurationJsonifier extends TypeJsonifier<Duration>
     with StringEncodeJsonifier<Duration> {
   static const durationIdentifier = "Duration";
 
-  const DurationJsonifier({super.nullable});
+  const DurationJsonifier({super.nullable}) : super(durationIdentifier);
 
   @override
-  String get identifier => buildIdentifier(durationIdentifier);
-
-  @override
-  TypeJsonifier get nullJsonifier =>
+  TypeJsonifier get nullReifier =>
       nullable ? this : DurationJsonifier(nullable: true);
 
   @override
@@ -92,13 +81,10 @@ final class Uint8ListJsonifier extends TypeJsonifier<Uint8List>
     with StringEncodeJsonifier<Uint8List> {
   static const uint8ListIdentifier = "Uint8List";
 
-  const Uint8ListJsonifier({super.nullable});
+  const Uint8ListJsonifier({super.nullable}) : super(uint8ListIdentifier);
 
   @override
-  String get identifier => buildIdentifier(uint8ListIdentifier);
-
-  @override
-  TypeJsonifier get nullJsonifier =>
+  TypeJsonifier get nullReifier =>
       nullable ? this : Uint8ListJsonifier(nullable: true);
 
   @override
@@ -113,13 +99,10 @@ final class UriJsonifier extends TypeJsonifier<Uri>
     with StringEncodeJsonifier<Uri> {
   static const uriIdentifier = "Uri";
 
-  const UriJsonifier({super.nullable});
+  const UriJsonifier({super.nullable}) : super(uriIdentifier);
 
   @override
-  String get identifier => buildIdentifier(uriIdentifier);
-
-  @override
-  TypeJsonifier get nullJsonifier =>
+  TypeJsonifier get nullReifier =>
       nullable ? this : UriJsonifier(nullable: true);
 
   @override

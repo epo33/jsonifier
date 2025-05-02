@@ -16,11 +16,7 @@ mixin StringEncodeJsonifier<T> on TypeJsonifier<T> {
     final parts = s.split(".");
     if (parts.length < 2) return null;
     final identifier = parts[1];
-    final result = jsonifier //
-        .typeJsonifiers
-        .whereType<StringEncodeJsonifier>()
-        .asJsonifierMap[identifier];
-    return result as StringEncodeJsonifier?;
+    return jsonifier.getReifierFor<StringEncodeJsonifier>(identifier);
   }
 
   static bool isPrivateUnicodePoint(int codePoint) =>
@@ -39,7 +35,7 @@ mixin StringEncodeJsonifier<T> on TypeJsonifier<T> {
 
   @override
   @internal
-  dynamic encode(String object, Jsonifier jsonifier, T source) =>
+  dynamic encode(String object, Jsonifier jsonifier) =>
       "${jsonifier.reservedStringPrefix}.$identifier.$object";
 
   @override

@@ -57,13 +57,10 @@ class TestJson {
 class TestJsonifier extends ClassJsonifier<TestJson> {
   const TestJsonifier({
     super.nullable,
-  });
+  }) : super("TestJson");
 
   @override
-  String get identifier => "TestJson";
-
-  @override
-  TypeJsonifier get nullJsonifier => TestJsonifier(nullable: true);
+  TypeJsonifier get nullReifier => TestJsonifier(nullable: true);
 
   @override
   TestJson fromJson(JsonMap json) {

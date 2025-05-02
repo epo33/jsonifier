@@ -3,7 +3,7 @@ import 'package:jsonifier/src/base_types.dart';
 
 typedef FromString<T> = T? Function(String s);
 
-abstract class TypeJsonifier<T> {
+abstract class TypeJsonifier<T> extends TypeReifier<T> {
   static const baseJsonifiers = <TypeJsonifier>[
     BaseTypeJsonifier.stringJsonfier,
     BaseTypeJsonifier.intJsonfier,
@@ -13,17 +13,19 @@ abstract class TypeJsonifier<T> {
     DurationJsonifier(),
     Uint8ListJsonifier(),
     UriJsonifier(),
+    IterableJsonifier.listJsonifier,
+    IterableJsonifier.setJsonifier,
+    MapJsonifier.jsonMapJsonifier,
   ];
 
-  const TypeJsonifier({this.nullable = false});
+  const TypeJsonifier(
+    super.baseIdentifier, {
+    super.nullable,
+    super.priority,
+  });
 
-  Type get jsonifiedType => T;
-
-  TypeJsonifier get nullJsonifier;
-
-  String get identifier;
-
-  final bool nullable;
+  @override
+  TypeJsonifier get nullReifier;
 
   FromString<T>? get decodeString => null;
 
@@ -33,24 +35,9 @@ abstract class TypeJsonifier<T> {
 
   bool canJsonify(object, Jsonifier jsonifier) => object is T;
 
-  TypeJsonifier get jsonifierIterable => IterableJsonifier.iterableOf<T>(this);
-
-  TypeJsonifier get jsonifierList => IterableJsonifier.listOf<T>(this);
-
-  TypeJsonifier get jsonifierSet => IterableJsonifier.setOf<T>(this);
-
-  MapJsonifier get mapJsonifiers => MapJsonifier<T>(valueJsonifier: this);
-
-  bool objectIsA(object, bool Function<V>(dynamic) isA) => isA<T>(object);
-
-  dynamic callWithType(dynamic Function<C>() called) => called<T>();
-
-  int get priority => 0;
-
   dynamic encode(
     covariant dynamic object,
     Jsonifier jsonifier,
-    covariant source,
   ) =>
       object;
 
@@ -61,25 +48,4 @@ abstract class TypeJsonifier<T> {
       this;
 
   dynamic decode(covariant dynamic object, Jsonifier jsonifier) => object;
-
-  @override
-  String toString() => identifier;
-
-  String buildIdentifier(String baseIdentifier, [String? subType]) =>
-      subType == null
-          ? nullable
-              ? "$baseIdentifier?"
-              : baseIdentifier
-          : nullable
-              ? "$baseIdentifier?.$subType"
-              : "$baseIdentifier.$subType";
-
-  @override
-  bool operator ==(other) =>
-      other is TypeJsonifier &&
-      other.identifier == identifier &&
-      other.jsonifiedType == jsonifiedType;
-
-  @override
-  int get hashCode => jsonifiedType.hashCode;
 }

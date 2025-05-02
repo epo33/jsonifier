@@ -19,32 +19,37 @@ enum TestEnum2 {
 }
 
 void main() {
+  final jsonifier = Jsonifier(
+    typeJsonifiers: [
+      EnumJsonifier<TestEnum1>(
+        "TestEnum1",
+        values: TestEnum1.values,
+      ),
+      EnumJsonifier<TestEnum2>(
+        "TestEnum2",
+        values: TestEnum2.values,
+      ),
+      TestJsonifier(),
+      GenericToJson().typeJsonifier,
+    ],
+  );
   void testJsonnify<V, T>(
     V object, [
     bool Function(V to, V from)? testEquality,
   ]) {
-    final jsonifier = Jsonifier(
-      jsonifiers: [
-        EnumJsonifier<TestEnum1>(
-          identifier: "TestEnum1",
-          values: TestEnum1.values,
-        ),
-        EnumJsonifier<TestEnum2>(
-          identifier: "TestEnum2",
-          values: TestEnum2.values,
-        ),
-        TestJsonifier(),
-        GenericToJson().typeJsonifier("Generics"),
-      ],
-    );
     final json = jsonifier.toJson(object);
-    expect(json is T, isTrue);
-    expect(jsonifier.toJson(json), json);
+    expect(json is T, isTrue, reason: "toJson() doesn't return a $T.");
+    expect(jsonifier.toJson(json), json, reason: "toJson isn't idempotent.");
     final value = jsonifier.fromJson(jsonDecode(jsonEncode(json)));
-    expect(value is V, isTrue);
+    expect(
+      value is V,
+      isTrue,
+      reason: "fromJson return a ${value.runtimeType}, type $V expected.",
+    );
     expect(
       testEquality?.call(object, value) ?? value == object,
       isTrue,
+      reason: "fromJson( toJson(value)) != value",
     );
   }
 
@@ -113,6 +118,15 @@ void main() {
   );
   test(
     "Generic class jsonifier",
-    () => testJsonnify(Generic(3)),
+    () {
+      testJsonnify(Generic(3));
+      testJsonnify(Generic(3.5));
+    },
+  );
+  test(
+    "List of generic class jsonifier",
+    () {
+      testJsonnify([Generic(3), Generic(4)]);
+    },
   );
 }

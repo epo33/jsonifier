@@ -3,26 +3,22 @@ import 'package:jsonifier/jsonifier.dart';
 
 final class EnumJsonifier<E extends Enum> extends TypeJsonifier<E>
     with StringEncodeJsonifier<E> {
-  const EnumJsonifier({
-    required String identifier,
+  const EnumJsonifier(
+    super.baseIdentifier, {
     required this.values,
     super.nullable,
-  })  : assert(
+  }) : assert(
           E != Enum,
           "EnumJsonifier<E> must be used with a specific enum type E.",
-        ),
-        _identifier = identifier;
+        );
 
   final Iterable<E> values;
 
   @override
-  String get identifier => buildIdentifier("@$_identifier");
-
-  @override
-  TypeJsonifier get nullJsonifier => nullable
+  TypeJsonifier get nullReifier => nullable
       ? this
       : EnumJsonifier<E>(
-          identifier: identifier,
+          baseIdentifier,
           values: values,
           nullable: true,
         );
@@ -37,6 +33,4 @@ final class EnumJsonifier<E extends Enum> extends TypeJsonifier<E>
 
   dynamic callWithEnumType(dynamic Function<T extends Enum>() called) =>
       called<E>();
-
-  final String _identifier;
 }
