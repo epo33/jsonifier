@@ -14,6 +14,10 @@ abstract class ClassJsonifier<C extends Object> extends TypeJsonifier<C> {
   }
 
   @override
+  bool canJsonify(object, Jsonifier jsonifier) =>
+      nullable ? object is C? : object is C;
+
+  @override
   C fromJson(JsonMap json);
 
   @override

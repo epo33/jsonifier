@@ -2,7 +2,7 @@ import 'package:jsonifier/jsonifier.dart';
 
 abstract interface class GenericTypeJsonifier {}
 
-mixin OneGenericTypeJsonifierMixin<T> on TypeJsonifier<T>
+mixin OneGenericTypeJsonifierMixin<T> on TypeReifier<T>
     implements GenericTypeJsonifier, GenericTypeReifier {
   TypeReifier? get genericReifier;
 
@@ -18,8 +18,9 @@ mixin OneGenericTypeJsonifierMixin<T> on TypeJsonifier<T>
   ObjectIsA buildObjectIsA<V>(TypeScanner scanner, {required bool nullable});
 
   @override
-  TypeJsonifier get nullReifier =>
-      nullable ? this : buildJsonifier(nullable: true, reifier: genericReifier);
+  TypeJsonifier get nullReifier => nullable
+      ? this as TypeJsonifier
+      : buildJsonifier(nullable: true, reifier: genericReifier);
 
   @override
   TypeReifier getReifierFor(String identifier, Jsonifier jsonifier) {

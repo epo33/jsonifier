@@ -6,7 +6,6 @@ import 'package:jsonifier/jsonifier.dart';
 import 'package:test/test.dart';
 
 import 'test_class.dart';
-import 'test_generic.dart';
 
 enum TestEnum1 {
   one,
@@ -30,7 +29,6 @@ void main() {
         values: TestEnum2.values,
       ),
       TestJsonifier(),
-      GenericToJson().typeJsonifier,
     ],
   );
   void testJsonnify<V, T>(
@@ -115,18 +113,5 @@ void main() {
         null,
       ),
     ),
-  );
-  test(
-    "Generic class jsonifier",
-    () {
-      testJsonnify(Generic(3));
-      testJsonnify(Generic(3.5));
-    },
-  );
-  test(
-    "List of generic class jsonifier",
-    () {
-      testJsonnify([Generic(3), Generic(4)]);
-    },
   );
 }

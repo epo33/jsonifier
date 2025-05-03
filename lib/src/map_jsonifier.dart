@@ -1,5 +1,4 @@
 import 'package:jsonifier/jsonifier.dart';
-import 'package:jsonifier/src/generics.dart';
 
 final class MapJsonifier<T, M extends Map<String, dynamic>?>
     extends TypeJsonifier<M> with OneGenericTypeJsonifierMixin<M> {
@@ -65,8 +64,10 @@ final class MapJsonifier<T, M extends Map<String, dynamic>?>
   }
 
   @override
-  TypeJsonifier buildJsonifier<V>(
-          {required bool nullable, TypeReifier<V>? reifier}) =>
+  TypeJsonifier buildJsonifier<V>({
+    required bool nullable,
+    TypeReifier<V>? reifier,
+  }) =>
       nullable
           ? MapJsonifier<V, Map<String, V>?>._(
               nullable: nullable,

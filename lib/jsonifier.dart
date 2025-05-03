@@ -1,6 +1,5 @@
 export 'src/class_jsonifier.dart';
 export 'src/enum_jsonifier.dart';
-export 'src/generic_class_jsonifier.dart';
 export 'src/generics.dart';
 export 'src/iterable_jsonifier.dart';
 export 'src/json_map.dart';
