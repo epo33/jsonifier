@@ -18,7 +18,7 @@ class Jsonifier {
       [
         ...jsonifiers,
         ...typeReifiers,
-      ].sortedBy((reifier) => reifier.identifier),
+      ].sortedBy<num>((reifier) => reifier.priority),
     );
     // Control identifiers unicity.
     final duplicates = _reifiers.groupFoldBy<String, int>(
