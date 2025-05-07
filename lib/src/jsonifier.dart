@@ -14,14 +14,12 @@ class Jsonifier {
       ...TypeJsonifier.baseJsonifiers,
       ...typeJsonifiers,
     ].sortedBy((jsonifier) => jsonifier.identifier);
-    _reifiers.addAll(
-      [
-        ...jsonifiers,
-        ...typeReifiers,
-      ].sortedBy<num>((reifier) => reifier.priority),
-    );
+    final reifiers = [
+      ...jsonifiers,
+      ...typeReifiers,
+    ].sortedBy((reifier) => reifier.identifier);
     // Control identifiers unicity.
-    final duplicates = _reifiers.groupFoldBy<String, int>(
+    final duplicates = reifiers.groupFoldBy<String, int>(
       (reifier) => reifier.identifier,
       (count, reifier) => (count ?? 0) + 1,
     )..removeWhere((key, value) => value < 2);
@@ -32,8 +30,9 @@ class Jsonifier {
     }
     // Control identifier validity.
     final invalidIdentifiers =
-        _reifiers.map((reifier) => reifier.identifier).where(
+        reifiers.map((reifier) => reifier.identifier).where(
               (identifier) =>
+                  identifier.isEmpty ||
                   identifier.contains(".") ||
                   identifier.contains(reservedStringPrefix),
             );
@@ -43,14 +42,12 @@ class Jsonifier {
       );
     }
     // Register typeJsonifiers by descending priority : prefer subclass to ancestor class.
-    _jsonifiers.addAll(
-      jsonifiers.sortedBy<num>((jsonifier) => -jsonifier.priority),
-    );
+    _reifiers.addAll(reifiers.sortedBy<num>((reifier) => -reifier.priority));
     _reifiersByNames.addEntries(
-      _reifiers.map((reifier) => MapEntry(reifier.baseIdentifier, reifier)),
+      reifiers.map((reifier) => MapEntry(reifier.baseIdentifier, reifier)),
     );
     _reifiersByType.addEntries(
-      _reifiersByNames.values.map((reifier) => MapEntry(reifier.type, reifier)),
+      reifiers.map((reifier) => MapEntry(reifier.type, reifier)),
     );
   }
 
@@ -59,7 +56,8 @@ class Jsonifier {
   String get reservedStringPrefix =>
       String.fromCharCode(reservedStringPrefixCode);
 
-  Iterable<TypeJsonifier> get typeJsonifiers => _jsonifiers;
+  Iterable<TypeJsonifier> get typeJsonifiers =>
+      _reifiers.whereType<TypeJsonifier>();
 
   R getReifierFor<R extends TypeReifier?>(String identifier) {
     TypeReifier? scan() {
@@ -133,7 +131,7 @@ class Jsonifier {
       if (json is String) {
         jsonifier = StringEncodeJsonifier.fromEncodededString(json, this);
       }
-      jsonifier ??= _jsonifiers.firstWhereOrNull(
+      jsonifier ??= typeJsonifiers.firstWhereOrNull(
         (jsonifier) => jsonifier.canJsonify(json, this),
       );
     }
@@ -167,7 +165,6 @@ class Jsonifier {
     return jsonifier.encode(json, this);
   }
 
-  final _jsonifiers = <TypeJsonifier>{};
   final _reifiers = <TypeReifier>[];
   final _reifiersByNames = <String, TypeReifier>{};
   final _reifiersByType = <Type, TypeReifier>{};
