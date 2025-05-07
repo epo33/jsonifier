@@ -5,7 +5,7 @@ sealed class IterableJsonifier<T, L> extends TypeJsonifier<L> {
   static const listIdentifier = "List";
   static const setIdentifier = "Set";
 
-  static const listJsonifier = _ListJsonifier<dynamic, List>(null);
+  static const listJsonifier = _ListJsonifier<dynamic, Iterable>(null);
 
   static const setJsonifier = _SetJsonifier<dynamic, Set>(null);
 
@@ -20,7 +20,11 @@ sealed class IterableJsonifier<T, L> extends TypeJsonifier<L> {
     return jsonifier.getReifierFor<IterableJsonifier>(type.substring(1));
   }
 
-  const IterableJsonifier(super.baseIdentifier, {super.nullable});
+  const IterableJsonifier(
+    super.baseIdentifier, {
+    super.nullable,
+    super.priority,
+  });
 }
 
 abstract class _IterableJsonifier<T, L> extends IterableJsonifier<T, L>
@@ -29,6 +33,7 @@ abstract class _IterableJsonifier<T, L> extends IterableJsonifier<T, L>
     super.baseIdentifier,
     this.genericReifier, {
     super.nullable,
+    super.priority,
   });
 
   @override
@@ -73,10 +78,11 @@ abstract class _IterableJsonifier<T, L> extends IterableJsonifier<T, L>
   }
 }
 
-final class _ListJsonifier<T, L extends List?>
+// All iterable except Set (because of a lower priority)
+final class _ListJsonifier<T, L extends Iterable?>
     extends _IterableJsonifier<T, L> {
   const _ListJsonifier(TypeReifier<T>? itemReifier, {super.nullable})
-      : super(IterableJsonifier.listIdentifier, itemReifier);
+      : super(IterableJsonifier.listIdentifier, itemReifier, priority: 0);
 
   @override
   List<T> fromJson(covariant json) {
@@ -89,19 +95,20 @@ final class _ListJsonifier<T, L extends List?>
     TypeReifier<V>? reifier,
   }) =>
       nullable
-          ? _ListJsonifier<V, List<V>?>(reifier, nullable: nullable)
-          : _ListJsonifier<V, List<V>>(reifier, nullable: nullable);
+          ? _ListJsonifier<V, Iterable<V>?>(reifier, nullable: nullable)
+          : _ListJsonifier<V, Iterable<V>>(reifier, nullable: nullable);
 
   @override
   ObjectIsA buildObjectIsA<V>(TypeScanner scanner, {required bool nullable}) =>
       nullable
-          ? <K>() => scanner.objectIsA<List<K>?>()
-          : <K>() => scanner.objectIsA<List<K>>();
+          ? <K>() => scanner.objectIsA<Iterable<K>?>()
+          : <K>() => scanner.objectIsA<Iterable<K>>();
 }
 
+// Priority must be set higher than _ListJsonifier
 final class _SetJsonifier<T, S extends Set?> extends _IterableJsonifier<T, S> {
   const _SetJsonifier(TypeReifier<T>? itemReifier, {super.nullable})
-      : super(IterableJsonifier.setIdentifier, itemReifier);
+      : super(IterableJsonifier.setIdentifier, itemReifier, priority: 1);
 
   @override
   Set<T> fromJson(json) => super.fromJson(json).toSet();
