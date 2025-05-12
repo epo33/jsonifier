@@ -1,5 +1,4 @@
 import 'package:jsonifier/jsonifier.dart';
-import 'package:jsonifier/src/generics.dart';
 
 sealed class IterableJsonifier<T, L> extends TypeJsonifier<L> {
   static const listIdentifier = "List";
@@ -82,7 +81,12 @@ abstract class _IterableJsonifier<T, L> extends IterableJsonifier<T, L>
 final class _ListJsonifier<T, L extends Iterable?>
     extends _IterableJsonifier<T, L> {
   const _ListJsonifier(TypeReifier<T>? itemReifier, {super.nullable})
-      : super(IterableJsonifier.listIdentifier, itemReifier, priority: 0);
+      : super(
+          IterableJsonifier.listIdentifier,
+          itemReifier,
+          // Must be the last Iterable jsonifier (classes implementing Iterable)
+          priority: -1,
+        );
 
   @override
   List<T> fromJson(covariant json) {
